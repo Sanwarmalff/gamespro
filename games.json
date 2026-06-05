@@ -4,7 +4,7 @@
     "title": "Retro Snake",
     "description": "The classic arcade snake game. Eat the apples, grow longer, and don't crash into the walls or yourself!",
     "category": "Arcade",
-    "zip_url": "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games/snake/game.zip",
+    "zip_url": "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games/snake/index.html",
     "icon_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/snake/icon.png",
     "thumbnail_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/snake/thumbnail.png",
     "version": "1.0.0"
