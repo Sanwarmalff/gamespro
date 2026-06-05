@@ -1,0 +1,32 @@
+[
+  {
+    "id": "snake",
+    "title": "Retro Snake",
+    "description": "The classic arcade snake game. Eat the apples, grow longer, and don't crash into the walls or yourself!",
+    "category": "Arcade",
+    "zip_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/snake/game.zip",
+    "icon_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/snake/icon.png",
+    "thumbnail_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/snake/thumbnail.png",
+    "version": "1.0.0"
+  },
+  {
+    "id": "racing",
+    "title": "Speed Racer",
+    "description": "High-speed 2D top-down racing game. Dodge obstacles and beat your high score.",
+    "category": "Racing",
+    "zip_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/racing/game.zip",
+    "icon_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/racing/icon.png",
+    "thumbnail_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/racing/thumbnail.png",
+    "version": "1.1.0"
+  },
+  {
+    "id": "puzzle",
+    "title": "Block Puzzle",
+    "description": "A relaxing yet challenging block puzzle game. Fill the grid to clear the lines.",
+    "category": "Puzzle",
+    "zip_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/puzzle/game.zip",
+    "icon_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/puzzle/icon.png",
+    "thumbnail_url": "https://raw.githubusercontent.com/miniverse-app/repo/main/games/puzzle/thumbnail.png",
+    "version": "1.0.5"
+  }
+]
