@@ -2,6 +2,7 @@ package com.miniverse.utils;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -26,123 +27,215 @@ import okhttp3.Response;
 
 public class GameDownloader {
 
-    // Default repository URL (can be customized or passed dynamically)
-    public static final String DEFAULT_JSON_URL = "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games.json";
-    
-    private final OkHttpClient client;
-    private final Gson gson;
-    private final GameManager gameManager;
-    private final Handler mainHandler;
+public static final String DEFAULT_JSON_URL =
+        "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games.json";
 
-    public interface GameListCallback {
-        void onSuccess(List<Game> games);
-        void onError(String error);
-    }
+private final OkHttpClient client;
+private final Gson gson;
+private final GameManager gameManager;
+private final Handler mainHandler;
 
-    public interface DownloadCallback {
-        void onProgress(int percent);
-        void onSuccess();
-        void onError(String error);
-    }
+public interface GameListCallback {
+    void onSuccess(List<Game> games);
+    void onError(String error);
+}
 
-    public GameDownloader(GameManager gameManager) {
-        this.client = new OkHttpClient();
-        this.gson = new Gson();
-        this.gameManager = gameManager;
-        // Ensures callbacks are executed on the Main (UI) Thread
-        this.mainHandler = new Handler(Looper.getMainLooper());
-    }
+public interface DownloadCallback {
+    void onProgress(int percent);
+    void onSuccess();
+    void onError(String error);
+}
 
-    public void fetchGamesList(String url, GameListCallback callback) {
-        Request request = new Request.Builder().url(url).build();
-        
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
-            }
+public GameDownloader(GameManager gameManager) {
+    this.client = new OkHttpClient();
+    this.gson = new Gson();
+    this.gameManager = gameManager;
+    this.mainHandler = new Handler(Looper.getMainLooper());
+}
 
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful() && response.body() != null) {
-                    String json = response.body().string();
-                    Type listType = new TypeToken<List<Game>>(){}.getType();
-                    try {
-                        List<Game> games = gson.fromJson(json, listType);
-                        mainHandler.post(() -> callback.onSuccess(games));
-                    } catch (Exception e) {
-                        mainHandler.post(() -> callback.onError("Failed to parse games list."));
-                    }
-                } else {
-                    mainHandler.post(() -> callback.onError("Server returned an error."));
-                }
-            }
-        });
-    }
+public void fetchGamesList(String url, GameListCallback callback) {
 
-    public void downloadAndInstallGame(Game game, DownloadCallback callback) {
-        Request request = new Request.Builder().url(game.getZipUrl()).build();
-        
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                mainHandler.post(() -> callback.onError(e.getMessage()));
-            }
+    Log.d("MINIVERSE", "Loading URL: " + url);
 
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) {
-                if (!response.isSuccessful() || response.body() == null) {
-                    mainHandler.post(() -> callback.onError("Download failed."));
-                    return;
-                }
+    Request request = new Request.Builder()
+            .url(url)
+            .build();
 
-                File gameDir = gameManager.getGameDirectory(game.getId());
-                File zipFile = new File(gameDir, game.getId() + ".zip");
+    client.newCall(request).enqueue(new Callback() {
 
-                try (InputStream is = response.body().byteStream();
-                     FileOutputStream fos = new FileOutputStream(zipFile)) {
+        @Override
+        public void onFailure(@NonNull Call call, @NonNull IOException e) {
 
-                    long totalBytes = response.body().contentLength();
-                    long downloadedBytes = 0;
-                    byte[] buffer = new byte[8192]; // 8KB buffer
-                    int bytesRead;
+            Log.e("MINIVERSE", "NETWORK ERROR", e);
 
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        fos.write(buffer, 0, bytesRead);
-                        downloadedBytes += bytesRead;
-                        
-                        if (totalBytes > 0) {
-                            int progress = (int) ((downloadedBytes * 100) / totalBytes);
-                            // Only update UI every so often or safely post to avoid flooding the main thread, 
-                            // but for simplicity, we post the progress directly here.
-                            mainHandler.post(() -> callback.onProgress(progress));
-                        }
-                    }
-                    fos.flush();
+            mainHandler.post(() ->
+                    callback.onError("NETWORK ERROR:\n" + e.getMessage())
+            );
+        }
 
-                    // Extract the ZIP file directly into the game's directory
-                    try (ZipFile zip = new ZipFile(zipFile)) {
-                        zip.extractAll(gameDir.getAbsolutePath());
-                    }
-                    
-                    // Clean up the ZIP file after successful extraction to save space
-                    if (zipFile.exists()) {
-                        zipFile.delete();
-                    }
+        @Override
+        public void onResponse(@NonNull Call call,
+                               @NonNull Response response) throws IOException {
 
-                    mainHandler.post(() -> {
-                        gameManager.addInstalledGame(game);
-                        callback.onSuccess();
-                    });
+            Log.d("MINIVERSE",
+                    "HTTP CODE = " + response.code());
+
+            if (response.isSuccessful() && response.body() != null) {
+
+                String json = response.body().string();
+
+                Log.d("MINIVERSE", "JSON:");
+                Log.d("MINIVERSE", json);
+
+                Type listType =
+                        new TypeToken<List<Game>>() {
+                        }.getType();
+
+                try {
+
+                    List<Game> games =
+                            gson.fromJson(json, listType);
+
+                    mainHandler.post(() ->
+                            callback.onSuccess(games));
 
                 } catch (Exception e) {
-                    // Clean up partially downloaded or failed files
-                    if (zipFile.exists()) {
-                        zipFile.delete();
-                    }
-                    mainHandler.post(() -> callback.onError("Installation failed: " + e.getMessage()));
+
+                    Log.e("MINIVERSE",
+                            "JSON PARSE ERROR", e);
+
+                    mainHandler.post(() ->
+                            callback.onError(
+                                    "JSON PARSE ERROR:\n"
+                                            + e.getMessage()
+                            )
+                    );
                 }
+
+            } else {
+
+                String bodyText = "";
+
+                try {
+                    if (response.body() != null) {
+                        bodyText = response.body().string();
+                    }
+                } catch (Exception ignored) {
+                }
+
+                String error =
+                        "HTTP ERROR\n\n" +
+                                "Code: " + response.code() +
+                                "\nMessage: " + response.message() +
+                                "\n\nBody:\n" + bodyText;
+
+                Log.e("MINIVERSE", error);
+
+                String finalError = error;
+
+                mainHandler.post(() ->
+                        callback.onError(finalError)
+                );
             }
-        });
-    }
+        }
+    });
+}
+
+public void downloadAndInstallGame(Game game,
+                                   DownloadCallback callback) {
+
+    Request request = new Request.Builder()
+            .url(game.getZipUrl())
+            .build();
+
+    client.newCall(request).enqueue(new Callback() {
+
+        @Override
+        public void onFailure(@NonNull Call call,
+                              @NonNull IOException e) {
+
+            mainHandler.post(() ->
+                    callback.onError(
+                            "Download Error:\n"
+                                    + e.getMessage()
+                    )
+            );
+        }
+
+        @Override
+        public void onResponse(@NonNull Call call,
+                               @NonNull Response response) {
+
+            if (!response.isSuccessful()
+                    || response.body() == null) {
+
+                mainHandler.post(() ->
+                        callback.onError(
+                                "Download Failed\nHTTP "
+                                        + response.code()
+                        )
+                );
+
+                return;
+            }
+
+            File gameDir =
+                    gameManager.getGameDirectory(
+                            game.getId());
+
+            File zipFile =
+                    new File(
+                            gameDir,
+                            game.getId() + ".zip"
+                    );
+
+            try (InputStream is =
+                         response.body().byteStream();
+
+                 FileOutputStream fos =
+                         new FileOutputStream(zipFile)) {
+
+                byte[] buffer = new byte[8192];
+
+                int count;
+
+                while ((count = is.read(buffer))
+                        != -1) {
+
+                    fos.write(
+                            buffer,
+                            0,
+                            count
+                    );
+                }
+
+                fos.flush();
+
+                ZipFile zip =
+                        new ZipFile(zipFile);
+
+                zip.extractAll(
+                        gameDir.getAbsolutePath()
+                );
+
+                zipFile.delete();
+
+                mainHandler.post(() -> {
+                    gameManager.addInstalledGame(game);
+                    callback.onSuccess();
+                });
+
+            } catch (Exception e) {
+
+                mainHandler.post(() ->
+                        callback.onError(
+                                "Install Error:\n"
+                                        + e.getMessage()
+                        )
+                );
+            }
+        }
+    });
+}
+
 }
