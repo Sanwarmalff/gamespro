@@ -27,7 +27,7 @@ import okhttp3.Response;
 public class GameDownloader {
 
     // Default repository URL (can be customized or passed dynamically)
-    public static final String DEFAULT_JSON_URL = "https://raw.githubusercontent.com/miniverse-app/repo/main/games.json";
+    public static final String DEFAULT_JSON_URL = "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games.json";
     
     private final OkHttpClient client;
     private final Gson gson;
