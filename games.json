@@ -10,7 +10,7 @@
     "version": "1.0.0"
   }, 
 {
-  "id": "tic_tac_toe",
+  "id": "tic_tak_toe",
   "title": "Tic Tac Toe",
   "description": "Play the classic Tic Tac Toe game in Single Player or Two Player mode.",
   "category": "Board",
