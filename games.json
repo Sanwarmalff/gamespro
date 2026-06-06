@@ -8,5 +8,15 @@
     "icon_url": "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games/guess_number/icon.png",
     "thumbnail_url": "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games/guess_number/thumbnail.png",
     "version": "1.0.0"
-  }
+  }, 
+{
+  "id": "tic_tac_toe",
+  "title": "Tic Tac Toe",
+  "description": "Play the classic Tic Tac Toe game in Single Player or Two Player mode.",
+  "category": "Board",
+  "zip_url": "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games/tic_tac_toe/game.zip",
+  "icon_url": "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games/tic_tac_toe/icon.png",
+  "thumbnail_url": "https://raw.githubusercontent.com/Sanwarmalff/gamespro/main/games/tic_tac_toe/thumbnail.png",
+  "version": "1.0.0"
+ }
 ]
